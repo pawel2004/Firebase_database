@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Firebase_database</string>
+    
+    <string-array name="genres">
+
+        <item>Rock</item>
+        <item>Pop</item>
+        <item>Sufi</item>
+        <item>Folk</item>
+
+    </string-array>
 </resources>
