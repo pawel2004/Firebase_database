@@ -1,6 +1,9 @@
 package com.example.grybos.firebase_database;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -12,8 +15,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
 
 public class AddTrackActivity extends AppCompatActivity {
 
@@ -22,6 +30,10 @@ public class AddTrackActivity extends AppCompatActivity {
     private SeekBar seekBarRating;
     private ListView listView;
     private Button button;
+    private ArrayList<Track> tracks = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private RAdapter adapter;
+    private RecyclerView.LayoutManager layoutManager;
 
     private DatabaseReference databaseReference; //Obiekt bazy
 
@@ -35,6 +47,7 @@ public class AddTrackActivity extends AppCompatActivity {
         seekBarRating = findViewById(R.id.seekBarRating);
         listView = findViewById(R.id.listView);
         button = findViewById(R.id.button1);
+        recyclerView = findViewById(R.id.recycler);
 
         Bundle bundle = getIntent().getExtras();
 
@@ -53,6 +66,46 @@ public class AddTrackActivity extends AppCompatActivity {
 
             }
         });
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                tracks.clear();
+
+                for (DataSnapshot tracksnapshot : snapshot.getChildren()){
+
+                    Track track = tracksnapshot.getValue(Track.class);
+
+                    tracks.add(track);
+
+                }
+
+                generateRecycler();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+    }
+
+    private void generateRecycler(){
+
+        layoutManager = new LinearLayoutManager(AddTrackActivity.this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        adapter = new RAdapter(tracks);
+        recyclerView.setAdapter(adapter);
 
     }
 
