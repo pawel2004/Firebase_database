@@ -1,10 +1,12 @@
 package com.example.grybos.firebase_database;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -12,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -70,6 +73,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { //Przy długim naciśnięciu w liście
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Artist artist = list.get(position); //Pobieramy artystę
+
+                showUpdateDialog(artist.getArtistId(), artist.getArtistName(), artist.getArtistGenre()); //Używamy metody z danymi artysty
+
+                return true;
+
+            }
+        });
+
     }
 
     @Override
@@ -122,6 +138,66 @@ public class MainActivity extends AppCompatActivity {
         databaseArtists.child(id).setValue(artist); //Tworzymy nowe odgałęzienie o id wygenerowanym wcześniej i dajemy tam obiekt artysty
 
         Toast.makeText(this, "Artist added", Toast.LENGTH_LONG).show();
+
+    }
+
+    private void showUpdateDialog(final String artistId, String artistName, String artistGenre){ //Pokazuje dialog, który zmienia dane
+
+        final AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this); //Nowy dialog
+
+        LayoutInflater inflater = getLayoutInflater(); //Inflater
+
+        final View dialogView = inflater.inflate(R.layout.changing_artist,null); //Przekazujemy mu layout
+
+        alert.setView(dialogView); //Ustawienie layoutu
+
+        final TextView textViewName = dialogView.findViewById(R.id.txt1);
+        final EditText editTextName = dialogView.findViewById(R.id.edit_text1);
+        final Spinner spinnerGenre = dialogView.findViewById(R.id.genre);
+        final Button buttonUpdate = dialogView.findViewById(R.id.update);
+
+        textViewName.setText("Updating artist: " + artistName);
+
+        final AlertDialog alertDialog = alert.create(); //Tworzymy dialog
+        alertDialog.show(); //Pokazujemy go
+
+        buttonUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String name = editTextName.getText().toString();
+                String genre = spinnerGenre.getSelectedItem().toString();
+
+                if (!name.isEmpty()){
+
+                    updateArtist(artistId, name, genre); //Metoda do updatu
+
+                }
+                else {
+
+                    editTextName.setError("Tu musi coś być!");
+                    editTextName.requestFocus();
+
+                }
+
+                alertDialog.dismiss(); //Chowamy dialog
+
+            }
+        });
+
+    }
+
+    private boolean updateArtist(String id, String name, String genre){
+
+        DatabaseReference databaseReference = databaseArtists.child(id); //Pobieramy obiekt artysty w drzewie po id
+
+        Artist artist = new Artist(id, name, genre); //Tworzymy nowy model z nowych danych z dialoga
+
+        databaseReference.setValue(artist); //Nadpisujemy dane
+
+        Toast.makeText(this, "Artist Updated", Toast.LENGTH_LONG).show();
+
+        return true;
 
     }
 
