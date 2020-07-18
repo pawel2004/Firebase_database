@@ -1,17 +1,21 @@
 package com.example.grybos.firebase_database;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -107,6 +111,17 @@ public class AddTrackActivity extends AppCompatActivity {
         adapter = new RAdapter(tracks);
         recyclerView.setAdapter(adapter);
 
+        adapter.setOnItemLongClickListener(new RAdapter.OnItemLongClickListener() {
+            @Override
+            public void onItemLongClick(int position) {
+
+                Track track = tracks.get(position);
+
+                showUpdateDialog(track.getTrackId(), track.getTrackName());
+
+            }
+        });
+
     }
 
     private void saveTrack() {
@@ -129,6 +144,66 @@ public class AddTrackActivity extends AppCompatActivity {
         databaseReference.child(id).setValue(track); //Dodaję utwór do dziecka
 
         Toast.makeText(this, "Track saved successfully", Toast.LENGTH_LONG).show();
+
+    }
+
+    private void showUpdateDialog(final String trackId, String trackName){ //Pokazuje dialog, który zmienia dane
+
+        final AlertDialog.Builder alert = new AlertDialog.Builder(AddTrackActivity.this); //Nowy dialog
+
+        LayoutInflater inflater = getLayoutInflater(); //Inflater
+
+        final View dialogView = inflater.inflate(R.layout.changing_track,null); //Przekazujemy mu layout
+
+        alert.setView(dialogView); //Ustawienie layoutu
+
+        final TextView textViewName = dialogView.findViewById(R.id.txt1);
+        final EditText editTextName = dialogView.findViewById(R.id.edit_text1);
+        final SeekBar seekBarRate = dialogView.findViewById(R.id.rate);
+        final Button buttonUpdate = dialogView.findViewById(R.id.update);
+
+        textViewName.setText("Updating track: " + trackName);
+
+        final AlertDialog alertDialog = alert.create(); //Tworzymy dialog
+        alertDialog.show(); //Pokazujemy go
+
+        buttonUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String name = editTextName.getText().toString();
+                int rating = seekBarRate.getProgress();
+
+                if (!name.isEmpty()){
+
+                    updateTrack(trackId, name, rating); //Metoda do updatu
+
+                }
+                else {
+
+                    editTextName.setError("Tu musi coś być!");
+                    editTextName.requestFocus();
+
+                }
+
+                alertDialog.dismiss(); //Chowamy dialog
+
+            }
+        });
+
+    }
+
+    private boolean updateTrack(String id, String name, int rating){
+
+        DatabaseReference databaseTrack = databaseReference.child(id); //Pobieramy obiekt utworu w drzewie po id
+
+        Track track = new Track(id, name, rating); //Tworzymy nowy model z nowych danych z dialoga
+
+        databaseTrack.setValue(track); //Nadpisujemy dane
+
+        Toast.makeText(this, "Track Updated", Toast.LENGTH_LONG).show();
+
+        return true;
 
     }
 }
