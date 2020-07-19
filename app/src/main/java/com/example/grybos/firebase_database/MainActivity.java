@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -155,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
         final EditText editTextName = dialogView.findViewById(R.id.edit_text1);
         final Spinner spinnerGenre = dialogView.findViewById(R.id.genre);
         final Button buttonUpdate = dialogView.findViewById(R.id.update);
+        final Button buttonDelete = dialogView.findViewById(R.id.delete);
 
         textViewName.setText("Updating artist: " + artistName);
 
@@ -184,6 +186,28 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        buttonDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                deleteArtist(artistId); //Metoda usuwająca, przyjmuje id
+                alertDialog.dismiss();
+
+            }
+        });
+
+    }
+
+    private void deleteArtist(String artistId) {
+
+        DatabaseReference drArtist = FirebaseDatabase.getInstance().getReference("artists").child(artistId); //Obiekt, który reprezentuje artystę
+        DatabaseReference drTracks = FirebaseDatabase.getInstance().getReference("tracks").child(artistId); //Obiekt. który reprezentuje jego utwory
+
+        drArtist.removeValue(); //Usuwanie
+        drTracks.removeValue(); //Usuwanie
+
+        Toast.makeText(this, "Artist deleted!", Toast.LENGTH_LONG).show();
 
     }
 

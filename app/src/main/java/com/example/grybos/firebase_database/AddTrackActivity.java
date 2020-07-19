@@ -161,6 +161,7 @@ public class AddTrackActivity extends AppCompatActivity {
         final EditText editTextName = dialogView.findViewById(R.id.edit_text1);
         final SeekBar seekBarRate = dialogView.findViewById(R.id.rate);
         final Button buttonUpdate = dialogView.findViewById(R.id.update);
+        final Button buttonDelete = dialogView.findViewById(R.id.delete);
 
         textViewName.setText("Updating track: " + trackName);
 
@@ -190,6 +191,26 @@ public class AddTrackActivity extends AppCompatActivity {
 
             }
         });
+
+        buttonDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                deleteTrack(trackId); //Metoda usuwająca, przyjmuje id
+                alertDialog.dismiss();
+
+            }
+        });
+
+    }
+
+    private void deleteTrack(String trackId) {
+
+        DatabaseReference drTrack = databaseReference.child(trackId); //Obiekt. który reprezentuje jego utwory
+
+        drTrack.removeValue(); //Usuwanie
+
+        Toast.makeText(this, "Track deleted!", Toast.LENGTH_LONG).show();
 
     }
 
